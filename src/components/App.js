@@ -17,11 +17,13 @@ class App extends Component{
             task_object: null,
             task_count: null,
             task_content: null,
-            content_list: []
+            content_list: [],
+            new_task: null
         };
 
         //binding methods here
-       this.loadTasks = this.loadTasks.bind(this)
+       //this.loadTasks = this.loadTasks.bind(this)
+       this.createNewTask = this.createNewTask.bind(this)
 
     }
 
@@ -37,7 +39,6 @@ class App extends Component{
             */
             await window.ethereum.request({method: 'eth_requestAccounts'});
             window.web3 = new Web3(window.ethereum);
-
             this.loadBlockchainData(this.props.dispatch)
 
         }else if(window.web3){
@@ -49,7 +50,6 @@ class App extends Component{
 
     //fetching contract
     async loadBlockchainData(dispatch){
-
         const web3 = new Web3(window.ethereum)
         this.setState({web3})
 
@@ -71,7 +71,10 @@ class App extends Component{
     async ContractInfo(){
         let task_count = await this.state.todolist.methods.taskCount().call()
         this.setState({task_count})
+        this.loadTasks()
     }
+
+
 
 
     async loadTasks(){
@@ -91,18 +94,54 @@ class App extends Component{
     }
 
 
+
+    createNewTask(){
+        if(this.state.new_task === "" || this.state.new_task === null){
+            window.alert("Please insert a valid task!")
+            return
+        }
+
+        this.state.todolist.methods.createTask(this.state.new_task).send({from: this.state.account})
+                                    .on('transactionHash', () => {
+                                        this.addNewTask()
+                                    })
+    }
+
+
+    async addNewTask(){
+        this.setState({content_list : []})
+        await this.ContractInfo()
+        window.location.reload(false);
+    }
+
+
+
     render(){
+        let tasks = this.state.content_list.map(item => (
+            <li key={item}>{item}</li>
+        ))
+
         return(
             <div>
                 <h1>To do list</h1>
-                <button onClick={this.loadTasks.bind(this)}>Show tasks</button>
                 <div>
+                    <form onSubmit={(e) => {
+									e.preventDefault()
+									this.createNewTask()
+					}}>
+                        <label>Add a new task </label><br/>
+                        <input type="text" onChange={(e) => this.setState({ new_task: e.target.value })}/>&nbsp;&nbsp;
+                        <button type="submit">Add to list</button>
+                    </form>
+                </div><br/>
+                {this.state.content_list.length !== 0 ? 
+                <div>
+                    Tasks:
                     <ul>
-                        {this.state.content_list.map(item => (
-                            <li key={item}>{item}</li>
-                        ))}
+                        {tasks}
                     </ul>
-                </div>
+                </div> : ""
+                }
             </div>
         );
     }
