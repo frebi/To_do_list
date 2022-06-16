@@ -20,9 +20,25 @@ contract ToDoList{
     }
 
     function createTask(string memory _content) public{
-        taskCount ++;
-        tasks[taskCount] = Task(taskCount, _content, false);
-        emit TaskCreated(taskCount, _content, false);
+        for(uint i=0; i<taskCount; i++){
+            if(tasks[i].completed){
+                tasks[i].content = _content;
+                tasks[i].completed = false;
+                emit TaskCreated(taskCount, _content, false);
+                break;
+            }
+            else if(!tasks[i].completed && i==taskCount-1){
+                taskCount ++;
+                tasks[taskCount] = Task(taskCount, _content, false);
+                emit TaskCreated(taskCount, _content, false);
+                break;
+            }
+        }
+        if(taskCount == 0){
+            taskCount ++;
+            tasks[taskCount] = Task(taskCount, _content, false);
+            emit TaskCreated(taskCount, _content, false);
+        }
     }
 
     function toggleCompleted(uint _id) public {

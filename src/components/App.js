@@ -17,7 +17,9 @@ class App extends Component{
             task_object: null,
             task_count: null,
             task_content: null,
+            task_id: null,
             content_list: [],
+            content_dictionary:{},
             new_task: null
         };
 
@@ -72,6 +74,7 @@ class App extends Component{
     async ContractInfo(){
         let task_count = await this.state.todolist.methods.taskCount().call()
         this.setState({task_count})
+        console.log("task_count: " + task_count)
         this.loadTasks()
     }
 
@@ -79,24 +82,25 @@ class App extends Component{
 
 
     async loadTasks(){
+        const temp_dictionary={};
         for(var i=1; i<=this.state.task_count; i++){
             this.setState({task_object: await this.state.todolist.methods.tasks(i).call()})
-            console.log(this.state.task_object[2] + ", " + this.state.task_object[1])
-            //if(this.state.task_object[2].toString() === "false"){
-                this.setState({task_content: await this.state.task_object[1]})
+            console.log("Status completed: " + this.state.task_object[2] + ", name: " + this.state.task_object[1] + ", id: " + this.state.task_object[0])
+
+            this.setState({task_content: await this.state.task_object[1]})
                 
-                //Updating array list without modifying the older one since the state cannot be mutated
-                this.setState(state => {
-                    const content_list = this.state.content_list.concat(this.state.task_content);
-                    //console.log(content_list)
-                    return {
-                        content_list
-                    };
-                });
-            //}else{
-                //console.log("it is true" + " " + this.state.task_object[1])
-            //}
+            //Updating array list without modifying the older one since the state cannot be mutated
+            if(!(await this.state.task_object[2])){
+                this.setState({task_id: await this.state.task_object[0]})
+                temp_dictionary[this.state.task_id]=this.state.task_content;
+                this.setState({content_dictionary: temp_dictionary});
+            }
         }
+        console.log("Dictionary length: "+Object.keys(this.state.content_dictionary).length);
+        console.log(
+            Object.entries(this.state.content_dictionary)
+            .map( ([key, value]) => `${key}-${value}` )
+          )
     }
 
 
@@ -115,8 +119,7 @@ class App extends Component{
 
 
     async updateTaskList(){
-        this.setState({content_list : []})
-        await this.ContractInfo()
+        this.setState({content_dictionary : {}})
         window.location.reload();
     }
     
@@ -124,12 +127,10 @@ class App extends Component{
 
 
     async completedTasks(elem){
-        //console.log(elem)
+        console.log(elem)
         //console.log(this.state.content_list.indexOf(elem)+1)
         if(window.confirm("The selected task will be completed")){
-            let index = this.state.content_list.indexOf(elem)+1
-            //console.log(this.state.content_list.indexOf(elem)+1)
-            this.state.todolist.methods.toggleCompleted(index).send({from : this.state.account})
+            this.state.todolist.methods.toggleCompleted(elem).send({from : this.state.account})
                                         .on('transactionHash', () => {
                                             this.updateTaskList()
                                         })
@@ -140,12 +141,24 @@ class App extends Component{
 
 
     render(){
+        /*
         let tasks = this.state.content_list.map(item => (
             
             <div key={item} className="form-check">
                 <input className="form-check-input" type="checkbox" value="" id="task-check" onClick={() => this.completedTasks(item)}/>
                 <label className="form-check-label" htmlFor="task-check">
                 {item}
+                </label>
+          </div>
+        ))
+        */
+
+        let tasks = Object.entries(this.state.content_dictionary).map(([key, value]) => (
+            
+            <div key={key} className="form-check">
+                <input className="form-check-input" type="checkbox" value="" id="task-check" onClick={() => this.completedTasks(Number(key))}/>
+                <label className="form-check-label" htmlFor="task-check">
+                {value}
                 </label>
           </div>
         ))
@@ -165,7 +178,7 @@ class App extends Component{
                         </div>
                     </form>
                 </div><br/>
-                {this.state.content_list.length !== 0 ? 
+                {Object.keys(this.state.content_dictionary).length !== 0 ? 
                 <div>
                     Tasks:
                     <ul>
