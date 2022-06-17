@@ -18,8 +18,9 @@ class App extends Component{
             task_count: null,
             task_content: null,
             task_id: null,
-            content_list: [],
+//          content_list: [],
             content_dictionary:{},
+            dictionary_completed:{},
             new_task: null
         };
 
@@ -82,25 +83,34 @@ class App extends Component{
 
 
     async loadTasks(){
-        const temp_dictionary={};
+        const temp_dictionary={}
+        const temp_completed={}
         for(var i=1; i<=this.state.task_count; i++){
             this.setState({task_object: await this.state.todolist.methods.tasks(i).call()})
-            console.log("Status completed: " + this.state.task_object[2] + ", name: " + this.state.task_object[1] + ", id: " + this.state.task_object[0])
+            console.log("Status deleted: " + this.state.task_object[3] + ", Status completed: " + this.state.task_object[2] + ", name: " + this.state.task_object[1] + ", id: " + this.state.task_object[0])
 
             this.setState({task_content: await this.state.task_object[1]})
                 
             //Updating array list without modifying the older one since the state cannot be mutated
             if(!(await this.state.task_object[2])){
                 this.setState({task_id: await this.state.task_object[0]})
-                temp_dictionary[this.state.task_id]=this.state.task_content;
-                this.setState({content_dictionary: temp_dictionary});
+                temp_dictionary[this.state.task_id]=this.state.task_content
+                this.setState({content_dictionary: temp_dictionary})
+            }else if(await this.state.task_object[2] && !(await this.state.task_object[3])){
+                this.setState({task_id: await this.state.task_object[0]})
+                temp_completed[this.state.task_id]=this.state.task_content
+                this.setState({dictionary_completed: temp_completed})
             }
         }
+        Object.entries(this.state.content_dictionary).sort();
+
         console.log("Dictionary length: "+Object.keys(this.state.content_dictionary).length);
         console.log(
             Object.entries(this.state.content_dictionary)
             .map( ([key, value]) => `${key}-${value}` )
           )
+        console.log("------ task completed: "+Object.keys(this.state.dictionary_completed).length)
+        //console.log("------ task deleted: "+(this.state.task_count - Object.keys(this.state.dictionary_completed).length - Object.entries(this.state.content_dictionary).length))
     }
 
 
@@ -120,6 +130,7 @@ class App extends Component{
 
     async updateTaskList(){
         this.setState({content_dictionary : {}})
+        this.setState({dictionary_completed : {}})
         window.location.reload();
     }
     
@@ -127,6 +138,28 @@ class App extends Component{
 
 
     async completedTasks(elem){
+        console.log(elem)
+        //console.log(this.state.content_list.indexOf(elem)+1)
+        if(window.confirm("The selected task will be completed")){
+            this.state.todolist.methods.toggleCompleted(elem).send({from : this.state.account})
+                                        .on('transactionHash', () => {
+                                            this.updateTaskList()
+                                        })
+        }else window.location.reload();
+    }
+
+    async deletedTasks(elem){
+        console.log(elem)
+        //console.log(this.state.content_list.indexOf(elem)+1)
+        if(window.confirm("The selected task will be deleted")){
+            this.state.todolist.methods.toggleDeleted(elem).send({from : this.state.account})
+                                        .on('transactionHash', () => {
+                                            this.updateTaskList()
+                                        })
+        }else window.location.reload();
+    }
+
+    async undoTasks(elem){
         console.log(elem)
         //console.log(this.state.content_list.indexOf(elem)+1)
         if(window.confirm("The selected task will be completed")){
@@ -160,7 +193,20 @@ class App extends Component{
                 <label className="form-check-label" htmlFor="task-check">
                 {value}
                 </label>
-          </div>
+            </div>
+          
+        ))
+
+        let tasks_completed = Object.entries(this.state.dictionary_completed).map(([key, value]) => (
+            
+            <div key={key} className="form-check">
+                <label className="form-check-label" htmlFor="task-check">
+                {value}
+                </label>
+                <button onClick={() => this.deletedTasks(Number(key))}>Delete</button>
+                <button onClick={() => this.undoTasks(Number(key))}>Undo Complete operation</button>
+            </div>
+          
         ))
 
         return(
@@ -180,9 +226,17 @@ class App extends Component{
                 </div><br/>
                 {Object.keys(this.state.content_dictionary).length !== 0 ? 
                 <div>
-                    Tasks:
+                    Tasks To Do
                     <ul>
                         {tasks}
+                    </ul>
+                </div> : ""
+                }
+                {Object.keys(this.state.dictionary_completed).length !== 0 ? 
+                <div>
+                    Completed Tasks
+                    <ul>
+                        {tasks_completed}
                     </ul>
                 </div> : ""
                 }
