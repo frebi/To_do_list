@@ -92,7 +92,7 @@ class App extends Component{
             this.setState({task_content: await this.state.task_object[1]})
                 
             //Updating array list without modifying the older one since the state cannot be mutated
-            if(!(await this.state.task_object[2])){
+            if(!(await this.state.task_object[2]) && !(await this.state.task_object[3])){
                 this.setState({task_id: await this.state.task_object[0]})
                 temp_dictionary[this.state.task_id]=this.state.task_content
                 this.setState({content_dictionary: temp_dictionary})
@@ -139,7 +139,6 @@ class App extends Component{
 
     async completedTasks(elem){
         console.log(elem)
-        //console.log(this.state.content_list.indexOf(elem)+1)
         if(window.confirm("The selected task will be completed")){
             this.state.todolist.methods.toggleCompleted(elem).send({from : this.state.account})
                                         .on('transactionHash', () => {
@@ -150,7 +149,6 @@ class App extends Component{
 
     async deletedTasks(elem){
         console.log(elem)
-        //console.log(this.state.content_list.indexOf(elem)+1)
         if(window.confirm("The selected task will be deleted")){
             this.state.todolist.methods.toggleDeleted(elem).send({from : this.state.account})
                                         .on('transactionHash', () => {
@@ -161,9 +159,29 @@ class App extends Component{
 
     async undoTasks(elem){
         console.log(elem)
-        //console.log(this.state.content_list.indexOf(elem)+1)
         if(window.confirm("The selected task will be completed")){
             this.state.todolist.methods.toggleCompleted(elem).send({from : this.state.account})
+                                        .on('transactionHash', () => {
+                                            this.updateTaskList()
+                                        })
+        }else window.location.reload();
+    }
+    
+    editTasks(elem){
+        console.log(elem)
+        document.getElementById("task_"+elem).style.display = "none"
+        document.getElementById("edit_task_"+elem).style.display = "unset"
+        document.getElementById("EditButton_"+elem).style.display = "none"
+        document.getElementById("SaveButton_"+elem).style.display = "unset"
+    }
+
+    
+    async updateTask(elem){
+        const newTask = document.getElementById("edit_task_"+elem).value
+        //console.log(newTask)
+
+        if(window.confirm("The selected task will be edited")){
+            this.state.todolist.methods.editTask(elem, newTask).send({from : this.state.account})
                                         .on('transactionHash', () => {
                                             this.updateTaskList()
                                         })
@@ -189,10 +207,14 @@ class App extends Component{
         let tasks = Object.entries(this.state.content_dictionary).map(([key, value]) => (
             
             <div key={key} className="form-check">
-                <input className="form-check-input" type="checkbox" value="" id="task-check" onClick={() => this.completedTasks(Number(key))}/>
-                <label className="form-check-label" htmlFor="task-check">
+                <label id={"task_"+key} className="form-check-label" htmlFor="task-check">
                 {value}
                 </label>
+                <input id={"edit_task_"+key} type="text" style={{display: 'none'}}></input>
+                <button id={"EditButton_"+key} onClick={() => this.editTasks(Number(key))}>Edit</button>
+                <button id={"SaveButton_"+key} style={{display: 'none'}} onClick={() => this.updateTask(Number(key))}>Save</button>
+                <button onClick={() => this.completedTasks(Number(key))}>Complete</button>
+                <button onClick={() => this.deletedTasks(Number(key))}>Delete</button>
             </div>
           
         ))
@@ -204,7 +226,7 @@ class App extends Component{
                 {value}
                 </label>
                 <button onClick={() => this.deletedTasks(Number(key))}>Delete</button>
-                <button onClick={() => this.undoTasks(Number(key))}>Undo Complete operation</button>
+                <button onClick={() => this.undoTasks(Number(key))}>Undo Complete</button>
             </div>
           
         ))

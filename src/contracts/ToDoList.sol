@@ -21,6 +21,7 @@ contract ToDoList{
     event TaskCreated(uint id, string content, bool completed, bool deleted);
     event TaskCompleted(uint id, bool completed);
     event TaskDeleted(uint id, bool deleted);
+    event TaskEdited(uint id, string content);
 
     constructor() public{
         createTask("test task");
@@ -62,6 +63,7 @@ contract ToDoList{
                 _task.completed = !_task.completed;
                 tasks[i] = _task;
                 emit TaskCompleted(i, _task.completed);
+                break;
             }
         }
     }
@@ -73,6 +75,17 @@ contract ToDoList{
                 _task.deleted = !_task.deleted;
                 tasks[i] = _task;
                 emit TaskDeleted(i, _task.deleted);
+                break;
+            }
+        }
+    }
+
+    function editTask(uint _id, string memory _content) public {
+        for(uint i=0; i<taskCount; i++){
+            if(tasks[i].id == _id){
+                tasks[i].content = _content;
+                emit TaskEdited(i, _content);
+                break;
             }
         }
     }
