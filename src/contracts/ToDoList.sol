@@ -56,16 +56,24 @@ contract ToDoList{
     }
 
     function toggleCompleted(uint _id) public {
-        Task memory _task = tasks[_id];
-        _task.completed = !_task.completed;
-        tasks[_id] = _task;
-        emit TaskCompleted(_id, _task.completed);
+        for(uint i=0; i<taskCount; i++){
+            if(tasks[i].id == _id){
+                Task memory _task = tasks[i];
+                _task.completed = !_task.completed;
+                tasks[i] = _task;
+                emit TaskCompleted(i, _task.completed);
+            }
+        }
     }
 
     function toggleDeleted(uint _id) public {
-        Task memory _task = tasks[_id];
-        _task.deleted = !_task.deleted;
-        tasks[_id] = _task;
-        emit TaskDeleted(_id, _task.deleted);
+        for(uint i=0; i<taskCount; i++){
+            if(tasks[i].id == _id){
+                Task memory _task = tasks[i];
+                _task.deleted = !_task.deleted;
+                tasks[i] = _task;
+                emit TaskDeleted(i, _task.deleted);
+            }
+        }
     }
 }
