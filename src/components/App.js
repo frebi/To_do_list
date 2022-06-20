@@ -2,6 +2,7 @@ import Web3 from 'web3'
 
 import React, {Component} from 'react';
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 import ToDoList from '../abis/ToDoList.json'
 
@@ -175,7 +176,7 @@ class App extends Component{
         document.getElementById("SaveButton_"+elem).style.display = "unset"
     }
 
-    
+
     async updateTask(elem){
         const newTask = document.getElementById("edit_task_"+elem).value
         //console.log(newTask)
@@ -206,60 +207,80 @@ class App extends Component{
 
         let tasks = Object.entries(this.state.content_dictionary).map(([key, value]) => (
             
-            <div key={key} className="form-check">
-                <label id={"task_"+key} className="form-check-label" htmlFor="task-check">
-                {value}
-                </label>
-                <input id={"edit_task_"+key} type="text" style={{display: 'none'}}></input>
-                <button id={"EditButton_"+key} onClick={() => this.editTasks(Number(key))}>Edit</button>
-                <button id={"SaveButton_"+key} style={{display: 'none'}} onClick={() => this.updateTask(Number(key))}>Save</button>
-                <button onClick={() => this.completedTasks(Number(key))}>Complete</button>
-                <button onClick={() => this.deletedTasks(Number(key))}>Delete</button>
+            <div key={key} className="form-check container py-1">
+                <div className="row content-center">
+                    <div className="col-2 center">
+                        <label id={"task_"+key} className="form-check-label" htmlFor="task-check">
+                        {value}
+                        </label>
+                        <input id={"edit_task_"+key} type="text" style={{display: 'none'}}></input>
+                    </div>
+                    <div className="col-4">
+                        <button id={"EditButton_"+key} type="button" className="btn btn-primary space" onClick={() => this.editTasks(Number(key))}>Edit</button>
+                        <button id={"SaveButton_"+key} type="button" className="btn btn-warning space" style={{display: 'none'}} onClick={() => this.updateTask(Number(key))}>Save</button>
+                        <button type="button" className="btn btn-primary space" onClick={() => this.completedTasks(Number(key))}>Complete</button>
+                        <button type="button" className="btn btn-primary space" onClick={() => this.deletedTasks(Number(key))}>Delete</button>
+                    </div>
+                </div>
             </div>
           
         ))
 
         let tasks_completed = Object.entries(this.state.dictionary_completed).map(([key, value]) => (
             
-            <div key={key} className="form-check">
-                <label className="form-check-label" htmlFor="task-check">
-                {value}
-                </label>
-                <button onClick={() => this.deletedTasks(Number(key))}>Delete</button>
-                <button onClick={() => this.undoTasks(Number(key))}>Undo Complete</button>
+            <div key={key} className="form-check container py-1">
+                <div className="row content-center">
+                    <div className="col-2 center">
+                        <label className="form-check-label" htmlFor="task-check">
+                        {value}
+                        </label>
+                    </div>
+                    <div className="col-4">
+                        <button type="button" className="btn btn-primary space" onClick={() => this.deletedTasks(Number(key))}>Delete</button>
+                        <button type="button" className="btn btn-primary space" onClick={() => this.undoTasks(Number(key))}>Undo Complete</button>
+                    </div>
+                </div>
             </div>
           
         ))
 
         return(
-            <div>
-                <h1>To do list</h1>
+            <div className="container text-center">
+                <div className="container py-4">
+                    <h1>To do list</h1>
+                </div>
                 <div>
                     <form onSubmit={(e) => {
 									e.preventDefault()
 									this.createNewTask()
 					}}>
-                        <div className="form-group">
-                            <label>Add a new task </label><br/>
-                            <input type="text" onChange={(e) => this.setState({ new_task: e.target.value })}/>&nbsp;&nbsp;
-                            <button type="submit">Add to list</button>
+                        <div className="container py-2">
+                            <label className="bold py-2">Add a new task </label><br/>
+                            <div className="input-group my-2 content-center">
+                                <input className="input-group-text" id="inputGroup-sizing-default" type="text" onChange={(e) => this.setState({ new_task: e.target.value })}/>&nbsp;&nbsp;
+                                <button type="submit" className="btn btn-primary" >Add to list</button>
+                            </div>
                         </div>
                     </form>
                 </div><br/>
                 {Object.keys(this.state.content_dictionary).length !== 0 ? 
                 <div>
-                    Tasks To Do
-                    <ul>
-                        {tasks}
-                    </ul>
+                    <div className="container py-4">
+                        <label className="bold py-3">Tasks To Do</label><br/>
+                        <ul>
+                            {tasks}
+                        </ul>
+                    </div>
                 </div> : ""
                 }
                 {Object.keys(this.state.dictionary_completed).length !== 0 ? 
                 <div>
-                    Completed Tasks
-                    <ul>
-                        {tasks_completed}
-                    </ul>
+                    <div className="container py-4">
+                        <label className="bold py-3">Completed Tasks</label><br/>
+                        <ul>
+                            {tasks_completed}
+                        </ul>
+                    </div>
                 </div> : ""
                 }
             </div>

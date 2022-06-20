@@ -1,0 +1,20 @@
+.center {
+    align-self: center;
+}
+
+.text-center{
+    text-align: center;
+}
+
+.content-center{
+    justify-content: center;
+}
+
+.bold{
+    font-weight: bold;
+}
+
+.space{
+    margin-left: 10px;
+    margin-right: 10px;
+}
