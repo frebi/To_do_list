@@ -70,7 +70,7 @@ contract ToDoList{
                 Task memory _task = tasks[i];
                 _task.completed = !_task.completed;
                 tasks[i] = _task;
-                emit TaskCompleted(i, _task.completed);
+                emit TaskCompleted(_id, _task.completed);
                 break;
             }
         }
@@ -82,7 +82,7 @@ contract ToDoList{
                 Task memory _task = tasks[i];
                 _task.deleted = !_task.deleted;
                 tasks[i] = _task;
-                emit TaskDeleted(i, _task.deleted);
+                emit TaskDeleted(_id, _task.deleted);
                 break;
             }
         }
@@ -92,7 +92,7 @@ contract ToDoList{
         for(uint i=1; i<=taskCount; i++){
             if(tasks[i].id == _id){
                 tasks[i].content = _content;
-                emit TaskEdited(i, _content);
+                emit TaskEdited(_id, _content);
                 break;
             }
         }
